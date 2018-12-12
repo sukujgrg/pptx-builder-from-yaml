@@ -155,11 +155,11 @@ def validate_yaml_file(schema: str, yaml_file: Path):
 @click.command()
 @click.argument("yaml-paths", nargs=-1, type=click.Path(exists=True), required=True)
 @click.option("--pptx-template-path", "-pt", type=click.Path(exists=True), required=True)
-@click.option("--master-slide-idx", "-ms", default=0, type=int)
-@click.option("--slide-layout-idx", "-sl", default=6, type=int)
-@click.option("--font-size", "-fs", default=32, type=int)
-@click.option("--font-name", "-fn", default="Calibri", type=str)
-@click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir())
+@click.option("--master-slide-idx", "-ms", default=0, type=int, show_default=True)
+@click.option("--slide-layout-idx", "-sl", default=6, type=int, show_default=True)
+@click.option("--font-size", "-fs", default=32, type=int, show_default=True)
+@click.option("--font-name", "-fn", default="Calibri", type=str, show_default=True)
+@click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir(), show_default=True)
 @click.option("--validate", is_flag=True)
 def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, validate):
     """
