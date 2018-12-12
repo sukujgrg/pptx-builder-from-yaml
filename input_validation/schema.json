@@ -2,7 +2,7 @@
     "type": "object",
     "properties": {
         "lyrics": {
-            "type": "object",
+            "type": "array",
             "additionalProperties": {
                 "type": "object",
                 "properties": {

@@ -57,7 +57,7 @@ def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: in
             print(msg)
             font_size = hard_font_size
 
-        for page, content in lyrics.items():
+        for content in lyrics:
             slide = prs.slides.add_slide(slide_layout)
 
             txbox = slide.shapes.add_textbox(**tb_pos)
@@ -90,7 +90,9 @@ def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: in
 
 
 def pick_master_slide(master_slides_path: Path) -> Path:
-    """
+    """Returns path to a master slide. If argument is a directory,
+    returns a randomly chosen file in the directory and if argument
+    is a file, returns the argument itself
 
     :return: path to chosen master slide
     """
@@ -118,7 +120,7 @@ def load_schema(schema_path: Path) -> str:
         return json.load(f)
 
 
-def validate_yaml_file(schema: str, yaml_file: Path) -> jsonschema.validators:
+def validate_yaml_file(schema: str, yaml_file: Path):
     """Validates yaml data against the defined schema
 
     :param schema: schema in json format
@@ -129,7 +131,7 @@ def validate_yaml_file(schema: str, yaml_file: Path) -> jsonschema.validators:
     with yaml_file.open() as f:
         data = yaml.load(f)
 
-    return jsonschema.validate(data, schema)
+    jsonschema.validate(data, schema)
 
 
 @click.command()
@@ -167,6 +169,8 @@ def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout
         for yamlfile in yamlfiles:
             try:
                 validate_yaml_file(schema, Path(yamlfile))
+                msg = f"VALIDATE: Validation of {yamlfile} passed"
+                click.echo(click.style(msg, fg="blue"))
             except jsonschema.exceptions.ValidationError as err:
                 msg = f"ERR: {yamlfile} {str(err.message)} {err.path}"
                 click.echo(click.style(msg, fg="red"), nl=True)
