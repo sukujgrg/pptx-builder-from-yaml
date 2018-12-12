@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
 import random
 import sys
 import tempfile
@@ -11,6 +10,33 @@ import click
 import jsonschema
 import pptx
 import yaml
+
+SCHEMA_FOR_YAML = {
+    "type": "object",
+    "properties": {
+        "lyrics": {
+            "type": "array",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "english": {
+                        "type": "string",
+                        "pattern": ".+\n$"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "malayalam": {
+                        "type": "string",
+                        "pattern": ".+\n$"
+                    }
+                },
+                "required": ["english"]
+            }
+        }
+    },
+    "required": ["lyrics"]
+}
 
 
 def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int, new_slide_path: str, font_name: str) -> Path:
@@ -109,17 +135,6 @@ def pick_master_slide(master_slides_path: Path) -> Path:
     return Path(master_slides_path, random.choice(master_slides))
 
 
-def load_schema(schema_path: Path) -> str:
-    """Load json schema and return it as json
-
-    :param schema_path: path to schema file
-    :return: json schema
-    """
-
-    with schema_path.open() as f:
-        return json.load(f)
-
-
 def validate_yaml_file(schema: str, yaml_file: Path):
     """Validates yaml data against the defined schema
 
@@ -142,9 +157,8 @@ def validate_yaml_file(schema: str, yaml_file: Path):
 @click.option("--font-size", "-fs", default=32, type=int)
 @click.option("--font-name", "-fn", default="Calibri", type=str)
 @click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir())
-@click.option("--schema_file", default="input_validation/schema.json", type=click.Path(exists=True))
 @click.option("--validate", is_flag=True)
-def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, schema_file, validate):
+def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, validate):
     """
     A powerpoint builder
 
@@ -165,10 +179,9 @@ def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout
 
     if validate:
         exit_fail = False
-        schema = load_schema(Path(schema_file))
         for yamlfile in yamlfiles:
             try:
-                validate_yaml_file(schema, Path(yamlfile))
+                validate_yaml_file(SCHEMA_FOR_YAML, Path(yamlfile))
                 msg = f"VALIDATE: Validation of {yamlfile} passed"
                 click.echo(click.style(msg, fg="blue"))
             except jsonschema.exceptions.ValidationError as err:
