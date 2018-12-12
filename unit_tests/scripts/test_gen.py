@@ -8,7 +8,7 @@ def test_gen_with_one_yaml():
     result = runner.invoke(
         gen.cli,
         ['unit_tests/scripts/yamls/Amazing_grace.yml',
-         '--pptx-template-path', 'unit_tests/scripts/master_slides']
+         '--pptx-template-path', 'unit_tests/scripts/pptx-templates']
     )
     assert result.exit_code == 0
 
@@ -18,6 +18,6 @@ def test_gen_with_wildcard():
     result = runner.invoke(
         gen.cli,
         ['unit_tests/scripts/yamls/Amazing_grace.yml',
-         '--pptx-template-path', 'unit_tests/scripts/master_slides']
+         '--pptx-template-path', 'unit_tests/scripts/pptx-templates']
     )
     assert result.exit_code == 0
