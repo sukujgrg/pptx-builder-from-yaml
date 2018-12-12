@@ -39,11 +39,11 @@ SCHEMA_FOR_YAML = {
 }
 
 
-def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int, new_slide_path: str, font_name: str) -> Path:
+def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int, new_slide_path: str, font_name: str) -> Path:
     """Builds a powerpoint presentation using data read from a yaml file
 
     :param filename: path to the yaml file 
-    :param default_master_slide: path to powerpoint template
+    :param pptx_template: path to powerpoint template
     :param master_slide_idx: slide master index
     :param slide_layout_idx: slide layout index
     :param font_size: size of the font
@@ -52,7 +52,7 @@ def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: in
     :return path to the generated pptx
     """
 
-    prs = pptx.Presentation(default_master_slide)
+    prs = pptx.Presentation(pptx_template)
 
     # setting text box size and position
     slide_height = pptx.util.Length(prs.slide_height)
@@ -132,7 +132,10 @@ def pick_master_slide(master_slides_path: Path) -> Path:
         if not f.name.startswith("archived")
     ]
 
-    return Path(master_slides_path, random.choice(master_slides))
+    if master_slides:
+        return Path(master_slides_path, random.choice(master_slides))
+
+    raise ValueError(f"Unable to find any valid pptx template file in {master_slides_path}")
 
 
 def validate_yaml_file(schema: str, yaml_file: Path):
@@ -151,14 +154,14 @@ def validate_yaml_file(schema: str, yaml_file: Path):
 
 @click.command()
 @click.argument("yaml-paths", nargs=-1, type=click.Path(exists=True), required=True)
-@click.option("--master-slide-path", "-dm", type=click.Path(exists=True), required=True)
+@click.option("--pptx-template-path", "-pt", type=click.Path(exists=True), required=True)
 @click.option("--master-slide-idx", "-ms", default=0, type=int)
 @click.option("--slide-layout-idx", "-sl", default=6, type=int)
 @click.option("--font-size", "-fs", default=32, type=int)
 @click.option("--font-name", "-fn", default="Calibri", type=str)
 @click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir())
 @click.option("--validate", is_flag=True)
-def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, validate):
+def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, validate):
     """
     A powerpoint builder
 
@@ -166,8 +169,8 @@ def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout
 
     """
 
-    master_slide_path = Path(master_slide_path)
-    master_slide = pick_master_slide(master_slide_path)
+    pptx_template_path = Path(pptx_template_path)
+    pptx_template = pick_master_slide(pptx_template_path)
 
     yamlfiles = []
     for yaml_path in yaml_paths:
@@ -197,7 +200,7 @@ def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout
         try:
             r = build_slide(
                     Path(yamlfile),
-                    master_slide,
+                    pptx_template,
                     master_slide_idx,
                     slide_layout_idx,
                     font_size,
