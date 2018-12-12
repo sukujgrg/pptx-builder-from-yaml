@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import json
+import random
+import sys
+import tempfile
+from pathlib import Path
+
+import click
+import jsonschema
+import pptx
+import yaml
+
+
+def build_slide(filename: Path, default_master_slide: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int, new_slide_path: str, font_name: str) -> Path:
+    """Builds a powerpoint presentation using data read from a yaml file
+
+    :param filename: path to the yaml file 
+    :param default_master_slide: path to powerpoint template
+    :param master_slide_idx: slide master index
+    :param slide_layout_idx: slide layout index
+    :param font_size: size of the font
+    :param new_slide_path: path to where the generated pptx should get dumped
+    :param font_name: name of the font
+    :return path to the generated pptx
+    """
+
+    prs = pptx.Presentation(default_master_slide)
+
+    # setting text box size and position
+    slide_height = pptx.util.Length(prs.slide_height)
+    slide_width = pptx.util.Length(prs.slide_width)
+
+    # Emu is English metric unit
+    tb_pos = {
+        "left": pptx.util.Emu(400000),
+        "top": pptx.util.Emu(400000),
+        "width": pptx.util.Emu(slide_width - (400000 * 2)),
+        "height": pptx.util.Emu(slide_height - (400000 * 2))
+    }
+
+    slide_layout = prs.slide_masters[master_slide_idx].slide_layouts[slide_layout_idx]
+
+    dst_file = filename.with_suffix(".pptx")
+    dst_dir = Path(new_slide_path)
+
+    with filename.open() as f:
+
+        yml_data = yaml.load(f)
+
+        lyrics = yml_data.get('lyrics')
+
+        hard_font_size = yml_data.get("font_size")
+        if hard_font_size:
+            msg = f"NOTE: Setting the font size to {hard_font_size} for {filename}"
+            print(msg)
+            font_size = hard_font_size
+
+        for page, content in lyrics.items():
+            slide = prs.slides.add_slide(slide_layout)
+
+            txbox = slide.shapes.add_textbox(**tb_pos)
+
+            tf = txbox.text_frame
+
+            # this is to keep text frame in the middle of the screen from top to bottom of the screen
+            tf.vertical_anchor = pptx.enum.text.MSO_ANCHOR.MIDDLE
+
+            # this is supposed to work as per the documentation but it's not working
+            # 09/12/2018
+            # tf.fit_text(font_family=font_name, max_size=font_size)
+
+            p = tf.add_paragraph()
+            p.alignment = pptx.enum.text.PP_ALIGN.LEFT
+            p.font.name = font_name
+            p.font.size = pptx.util.Pt(font_size)
+
+            p.text = content.get("english")
+
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    dst_path = Path(dst_dir, dst_file.name)
+
+    if dst_path.exists():
+        dst_path.unlink()
+
+    prs.save(str(dst_path))
+
+    return dst_path
+
+
+def pick_master_slide(master_slides_path: Path) -> Path:
+    """
+
+    :return: path to chosen master slide
+    """
+
+    if master_slides_path.is_file():
+        return master_slides_path
+
+    master_slides = [
+        f.name for f in master_slides_path.iterdir()
+        if f.suffix == '.pptx'
+        if not f.name.startswith("archived")
+    ]
+
+    return Path(master_slides_path, random.choice(master_slides))
+
+
+def load_schema(schema_path: Path) -> str:
+    """Load json schema and return it as json
+
+    :param schema_path: path to schema file
+    :return: json schema
+    """
+
+    with schema_path.open() as f:
+        return json.load(f)
+
+
+def validate_yaml_file(schema: str, yaml_file: Path) -> jsonschema.validators:
+    """Validates yaml data against the defined schema
+
+    :param schema: schema in json format
+    :param yaml_file: path to yaml_file
+    :return:
+    """
+
+    with yaml_file.open() as f:
+        data = yaml.load(f)
+
+    return jsonschema.validate(data, schema)
+
+
+@click.command()
+@click.argument("yaml-paths", nargs=-1, type=click.Path(exists=True), required=True)
+@click.option("--master-slide-path", "-dm", type=click.Path(exists=True), required=True)
+@click.option("--master-slide-idx", "-ms", default=0, type=int)
+@click.option("--slide-layout-idx", "-sl", default=6, type=int)
+@click.option("--font-size", "-fs", default=32, type=int)
+@click.option("--font-name", "-fn", default="Calibri", type=str)
+@click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir())
+@click.option("--schema_file", default="input_validation/schema.json", type=click.Path(exists=True))
+@click.option("--validate", is_flag=True)
+def cli(yaml_paths, master_slide_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, schema_file, validate):
+    """
+    A powerpoint builder
+
+    https://github.com/sukujgrg/pptx-builder-from-yaml
+
+    """
+
+    master_slide_path = Path(master_slide_path)
+    master_slide = pick_master_slide(master_slide_path)
+
+    yamlfiles = []
+    for yaml_path in yaml_paths:
+        yaml_path = Path(yaml_path)
+        if yaml_path.is_dir():
+            yamlfiles.extend([yml for yml in yaml_path.iterdir()])
+        else:
+            yamlfiles.append(yaml_path)
+
+    if validate:
+        exit_fail = False
+        schema = load_schema(Path(schema_file))
+        for yamlfile in yamlfiles:
+            try:
+                validate_yaml_file(schema, Path(yamlfile))
+            except jsonschema.exceptions.ValidationError as err:
+                msg = f"ERR: {yamlfile} {str(err.message)} {err.path}"
+                click.echo(click.style(msg, fg="red"), nl=True)
+                exit_fail = True
+            except Exception:
+                raise
+        if exit_fail:
+            sys.exit(1)
+
+    for yamlfile in yamlfiles:
+        try:
+            r = build_slide(
+                    Path(yamlfile),
+                    master_slide,
+                    master_slide_idx,
+                    slide_layout_idx,
+                    font_size,
+                    new_slide_path,
+                    font_name
+                )
+            msg = f"PPTX: {r}"
+            click.echo(click.style(msg, fg="green"))
+        except Exception:
+            raise
+
+
+if __name__ == '__main__':
+    cli()

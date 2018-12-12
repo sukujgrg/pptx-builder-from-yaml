@@ -1,0 +1,11 @@
+autopep8==1.4.3
+certifi==2018.11.29
+Click==7.0
+jsonschema==2.6.0
+pex==1.5.3
+python-pptx==0.6.16
+PyYAML==3.13
+tox==3.5.3
+virtualenv==16.1.0
+yamllint==1.13.0
+pytest==4.0.1

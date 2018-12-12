@@ -1,0 +1,9 @@
+extends: default
+
+rules:
+  line-length:
+    max: 58
+    level: warning
+  indentation:
+    spaces: 2
+    check-multi-line-strings: true

@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "properties": {
+        "lyrics": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "english": {
+                            "type": "string",
+                            "pattern": ".+\n$"
+                            },
+                    "kind": {"type": "string"},
+                    "malayalam": {"type": "string"}
+                },
+                "required": ["english"]
+            } 
+        }
+    },
+    "required": ["lyrics"]
+}
