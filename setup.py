@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 4)
@@ -30,6 +30,7 @@ setup(
       'pptx-builder=scripts.gen:cli',
     ],
   },
+  packages=['scripts'],
   install_requires=[
     'click==7.0',
     'python-pptx==0.6.16',
