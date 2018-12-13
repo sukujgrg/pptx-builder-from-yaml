@@ -10,13 +10,13 @@ CLI to generate powerpoint slides from simple yaml file[s]
 
 ## How to install?
 
-```
-$ pip install pptx-builder-from-yaml
+```bash
+pip install pptx-builder-from-yaml
 ```
 
 ## How to run the CLI?
-```
-$ pptx-builder --help
+```bash
+pptx-builder --help
 Usage: pptx-builder [OPTIONS] YAML_PATHS...
 
   A powerpoint builder
@@ -38,8 +38,8 @@ Options:
   --help                          Show this message and exit.
 ```
 
-```
-$ pptx-builder slide_yamls/ -pt pptx-templates/default.pptx
+```bash
+pptx-builder slide_yamls/ -pt pptx-templates/default.pptx
 ```
 **Notes:**
 - `slide_yamls/` is the directory that holds `yaml` files for slides. The `yaml`[s] must
@@ -58,7 +58,7 @@ system you run the `pptx-builder` on.
 
 
 ### How to validate a yaml and then generate the PPTX?
-```
+```bash
 pptx-builder slide_yamls/dummy.yml -dm master_slides/default.pptx --validate
 ```
 
@@ -72,3 +72,23 @@ Add footer to pptx template file to pass with `--pptx-template-path` option
 Create different pptx template files with different backgrounds and pass it on to
 `--pptx-template-path` option. See [this](https://youtu.be/AftDaPQwhPg) video on
 creating pptx template file.
+
+## How to setup development environment?
+
+```bash
+git clone https://github.com/sukujgrg/pptx-builder-from-yaml.git
+
+cd pptx-builder-from-yaml
+
+python3 -m venv ~/.pyenv/pptx-builder
+
+source ~/.pyenv/pptx-builder/bin/activate
+
+pip install -r requirements.txt
+```
+
+## How to run tests?
+```bash
+cd pptx-builder-from-yaml/
+pytest
+```
