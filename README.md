@@ -1,5 +1,19 @@
 # pptx-builder-from-yaml
-CLI to generate powerpoint slides from simple yaml file[s]
+
+> CLI to generate powerpoint slides from simple yaml file[s]
+
+* Table of contents
+  * [Dependencies to run the CLI](#dependencies-to-run-the-cli)
+  * [How to install?](#how-to-install)
+  * [How does a yaml file look like for generating pptx?](#how-does-a-yaml-file-look-like-for-generating-pptx)
+  * [How to run the CLI?](#how-to-run-the-cli)
+     * [How to validate a yaml and then generate the PPTX?](#how-to-validate-a-yaml-and-then-generate-the-pptx)
+  * [FAQs](#faqs)
+     * [How can I add same footer to all pptx[s] built using the CLI?](#how-can-i-add-same-footer-to-all-pptxs-built-using-the-cli)
+     * [How to get different backgrounds for the generated pptx files using the CLI?](#how-to-get-different-backgrounds-for-the-generated-pptx-files-using-the-cli)
+  * [How to setup development environment?](#how-to-setup-development-environment)
+  * [How to run tests?](#how-to-run-tests)
+
 
 ## Dependencies to run the CLI
 - `>= python3.4`
@@ -14,9 +28,13 @@ CLI to generate powerpoint slides from simple yaml file[s]
 pip install pptx-builder-from-yaml
 ```
 
+## How does a yaml file look like for generating pptx?
+
+Here is a sample yaml file - [Dummy.yml](unit_tests/scripts/yamls/Dummy.yml)
+
 ## How to run the CLI?
 ```bash
-pptx-builder --help
+$ pptx-builder --help
 Usage: pptx-builder [OPTIONS] YAML_PATHS...
 
   A powerpoint builder
@@ -90,5 +108,26 @@ pip install -r requirements.txt
 ## How to run tests?
 ```bash
 cd pptx-builder-from-yaml/
+
 pytest
+```
+or
+```bash
+$ tox .
+py36 create: /Users/suku/GitHubPublic/pptx-builder-from-yaml/.tox/py36
+py36 installdeps: ., pytest
+py36 installed: atomicwrites==1.2.1,attrs==18.2.0,Click==7.0,jsonschema==2.6.0,lxml==4.2.5,more-itertools==4.3.0,Pillow==5.3.0,pluggy==0.8.0,pptx-builder-from-yaml==0.0.1,py==1.7.0,pytest==4.0.1,python-pptx==0.6.16,PyYAML==3.13,six==1.12.0,XlsxWriter==1.1.2
+py36 runtests: PYTHONHASHSEED='69299544'
+py36 runtests: commands[0] | pytest
+===================================================== test session starts ======================================================
+platform darwin -- Python 3.6.4, pytest-4.0.1, py-1.7.0, pluggy-0.8.0
+rootdir: /Users/suku/GitHubPublic/pptx-builder-from-yaml, inifile:
+collected 2 items
+
+unit_tests/scripts/test_gen.py ..                                                                                        [100%]
+
+=================================================== 2 passed in 0.29 seconds ===================================================
+___________________________________________________________ summary ____________________________________________________________
+  py36: commands succeeded
+  congratulations :)
 ```

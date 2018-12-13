@@ -33,7 +33,8 @@ setup(
   install_requires=[
     'click==7.0',
     'python-pptx==0.6.16',
-    'PyYAML==3.13'
+    'PyYAML==3.13',
+    'jsonschema==2.6.0'
   ],
   classifiers=[
     'Programming Language :: Python :: 3',
