@@ -17,7 +17,7 @@ def test_gen_with_wildcard():
     runner = CliRunner()
     result = runner.invoke(
         gen.cli,
-        ['unit_tests/scripts/yamls/Amazing_grace.yml',
+        ['unit_tests/scripts/yamls/',
          '--pptx-template-path', 'unit_tests/scripts/pptx-templates']
     )
     assert result.exit_code == 0

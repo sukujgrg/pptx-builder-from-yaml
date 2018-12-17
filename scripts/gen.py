@@ -3,7 +3,6 @@
 
 import random
 import sys
-import tempfile
 from pathlib import Path
 
 import click
@@ -39,7 +38,8 @@ SCHEMA_FOR_YAML = {
 }
 
 
-def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int, new_slide_path: str, font_name: str) -> Path:
+def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slide_layout_idx: int, font_size: int,
+                dst_dir: Path, font_name: str, slide_txt_alignment: str = "left") -> Path:
     """Builds a powerpoint presentation using data read from a yaml file
 
     :param filename: path to the yaml file 
@@ -47,8 +47,9 @@ def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slid
     :param master_slide_idx: slide master index
     :param slide_layout_idx: slide layout index
     :param font_size: size of the font
-    :param new_slide_path: path to where the generated pptx should get dumped
+    :param dst_dir: directory where the generated pptx should get dumped
     :param font_name: name of the font
+    :param slide_txt_alignment: alignment of text in slides
     :return path to the generated pptx
     """
 
@@ -68,9 +69,6 @@ def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slid
 
     slide_layout = prs.slide_masters[master_slide_idx].slide_layouts[slide_layout_idx]
 
-    dst_file = filename.with_suffix(".pptx")
-    dst_dir = Path(new_slide_path)
-
     with filename.open() as f:
 
         yml_data = yaml.load(f)
@@ -80,7 +78,7 @@ def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slid
         hard_font_size = yml_data.get("font_size")
         if hard_font_size:
             msg = f"NOTE: Setting the font size to {hard_font_size} for {filename}"
-            print(msg)
+            click.echo(click.style(msg, fg="blue"))
             font_size = hard_font_size
 
         for content in lyrics:
@@ -98,13 +96,21 @@ def build_slide(filename: Path, pptx_template: Path, master_slide_idx: int, slid
             # tf.fit_text(font_family=font_name, max_size=font_size)
 
             p = tf.add_paragraph()
-            p.alignment = pptx.enum.text.PP_ALIGN.LEFT
+
+            if slide_txt_alignment == "left":
+                p.alignment = pptx.enum.text.PP_ALIGN.LEFT
+            elif slide_txt_alignment == "middle":
+                p.alignment = pptx.enum.text.PP_ALIGN.CENTER
+            else:
+                p.alignment = pptx.enum.text.PP_ALIGN.RIGHT
+
             p.font.name = font_name
             p.font.size = pptx.util.Pt(font_size)
 
             p.text = content.get("english")
 
     dst_dir.mkdir(parents=True, exist_ok=True)
+    dst_file = filename.with_suffix(".pptx")
     dst_path = Path(dst_dir, dst_file.name)
 
     if dst_path.exists():
@@ -138,7 +144,7 @@ def pick_master_slide(master_slides_path: Path) -> Path:
     raise ValueError(f"Unable to find any valid pptx template file in {master_slides_path}")
 
 
-def validate_yaml_file(schema: str, yaml_file: Path):
+def validate_yaml_file(schema: dict, yaml_file: Path):
     """Validates yaml data against the defined schema
 
     :param schema: schema in json format
@@ -159,15 +165,20 @@ def validate_yaml_file(schema: str, yaml_file: Path):
 @click.option("--slide-layout-idx", "-sl", default=6, type=int, show_default=True)
 @click.option("--font-size", "-fs", default=32, type=int, show_default=True)
 @click.option("--font-name", "-fn", default="Calibri", type=str, show_default=True)
-@click.option("--new-slide-path", "-ns", type=click.Path(file_okay=False, exists=False), default=tempfile.gettempdir(), show_default=True)
+@click.option("--dst-dir", "-ns", default="./generated-pptx", show_default=True)
+@click.option("--slide-txt-alignment", "-ta", default="left", type=click.Choice(["left", "middle", "right"]),
+              show_default=True)
 @click.option("--validate", is_flag=True)
-def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layout_idx, new_slide_path, font_name, validate):
+def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layout_idx, dst_dir, font_name,
+        slide_txt_alignment, validate):
     """
     A powerpoint builder
 
     https://github.com/sukujgrg/pptx-builder-from-yaml
 
     """
+
+    dst_dir = Path(dst_dir)
 
     pptx_template_path = Path(pptx_template_path)
     pptx_template = pick_master_slide(pptx_template_path)
@@ -204,8 +215,9 @@ def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layou
                     master_slide_idx,
                     slide_layout_idx,
                     font_size,
-                    new_slide_path,
-                    font_name
+                    dst_dir,
+                    font_name,
+                    slide_txt_alignment
                 )
             msg = f"PPTX: {r}"
             click.echo(click.style(msg, fg="green"))
