@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+click = "==7.*"
+python-pptx = "==0.6.*"
+jsonschema = "==2.6.*"
+tox = "==3.5.*"
+pyyaml = "==3.*"
+pytest = "==4.*"
+
+[requires]
+python_version = "3.6"
+
+[packages]
+pptx-builder-from-yaml = {editable = true,path = "."}

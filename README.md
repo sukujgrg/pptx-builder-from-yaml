@@ -23,7 +23,7 @@
   - `PyYAML==3.13`
 
 ## How to install?
-
+> https://pypi.org/project/pptx-builder-from-yaml/
 ```bash
 pip install pptx-builder-from-yaml
 ```
@@ -98,11 +98,11 @@ git clone https://github.com/sukujgrg/pptx-builder-from-yaml.git
 
 cd pptx-builder-from-yaml
 
-python3 -m venv ~/.pyenv/pptx-builder
+pipenv install --dev
 
-source ~/.pyenv/pptx-builder/bin/activate
+pipenv shell
 
-pip install -r requirements.txt
+pipenv graph
 ```
 
 ## How to run tests?
