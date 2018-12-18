@@ -1,7 +1,6 @@
+import re
 import sys
 from setuptools import setup
-
-VERSION = '0.0.3'
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 4)
@@ -13,11 +12,13 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
+with open('pptx_builder/__init__.py', encoding='utf8') as f:
+    version = re.search(r'(?:$__version__ = )\"(.+)\"', f.read())
 
 setup(
   name='pptx-builder-from-yaml',
   python_requires='>=3.4',
-  version=VERSION,
+  version=version,
   author='Suku John George',
   author_email='sukujgrg@gmail.com',
   url='https://github.com/sukujgrg/pptx-builder-from-yaml',
@@ -27,10 +28,10 @@ setup(
   license='MIT',
   entry_points={
     'console_scripts': [
-      'pptx-builder=scripts.gen:cli',
+      'pptx-builder=pptx_builder:cli',
     ],
   },
-  packages=['scripts'],
+  packages=['pptx_builder'],
   install_requires=[
     'click==7.0',
     'python-pptx==0.6.16',
