@@ -10,6 +10,9 @@ import jsonschema
 import pptx
 import yaml
 
+
+__version__ = "0.0.4"
+
 SCHEMA_FOR_YAML = {
     "type": "object",
     "properties": {
@@ -168,7 +171,8 @@ def validate_yaml_file(schema: dict, yaml_file: Path):
 @click.option("--dst-dir", "-ns", default="./generated-pptx", show_default=True)
 @click.option("--slide-txt-alignment", "-ta", default="left", type=click.Choice(["left", "middle", "right"]),
               show_default=True)
-@click.option("--validate", is_flag=True)
+@click.option("--validate", is_flag=True, help="Run yaml validation against schema")
+@click.version_option(version=__version__, message='version %(version)s')
 def cli(yaml_paths, pptx_template_path, font_size, master_slide_idx, slide_layout_idx, dst_dir, font_name,
         slide_txt_alignment, validate):
     """
