@@ -8,7 +8,7 @@ click = "==7.*"
 python-pptx = "==0.6.*"
 jsonschema = "==2.6.*"
 tox = "==3.5.*"
-pyyaml = "==3.*"
+pyyaml = "==5.*"
 pytest = "==4.*"
 setuptools = "*"
 
